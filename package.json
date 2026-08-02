@@ -1,0 +1,11 @@
+{
+  "name": "moroccan-days",
+  "version": "1.0.0",
+  "description": "A relaxing procedural Three.js Moroccan frontier world.",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "python3 -m http.server 4173",
+    "check": "node --check src/main.js"
+  }
+}
