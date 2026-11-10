@@ -8,3 +8,17 @@ h1 { margin: 0; font-size: clamp(42px, 7vw, 82px); line-height: .88; text-shadow
 .legend span, .biome-card { border-radius: 999px; padding: 9px 13px; color: #2d190d; background: #ffd382; font-weight: 800; font-size: 12px; }
 .biome-card { position: fixed; right: 26px; bottom: 25px; background: #f7eee0; color: #9e442d; box-shadow: 0 14px 38px rgba(0,0,0,.24); }
 @media (max-width: 720px) { .hud { left: 14px; right: 14px; top: 14px; max-width: none; } .biome-card { left: 14px; right: auto; } }
+
+.hud { background: #3a211b; backdrop-filter: none; max-width: 350px; padding: 18px 20px; }
+h1 { font-size: clamp(32px, 4vw, 52px); line-height: 1; }
+.hud p:not(.eyebrow) { font-size: 14px; line-height: 1.5; }
+.places { position: fixed; bottom: 20px; left: 20px; display: flex; flex-wrap: wrap; gap: 6px; max-width: calc(100vw - 40px); }
+.places button { border: 1px solid #ffd382; background: #3a211b; color: #fff6df; font: 600 13px system-ui; border-radius: 20px; min-height: 44px; padding: 10px 14px; cursor: pointer; }
+.places button:focus-visible { outline: 3px solid #fff6df; outline-offset: 3px; }
+@media (max-width: 720px) {
+  .hud { padding: 14px 16px; } .hud p:not(.eyebrow), .legend { display: none; }
+  .eyebrow { font-size: 10px; letter-spacing: .12em; } h1 { font-size: 32px; }
+  .places { left: 14px; bottom: 14px; max-width: calc(100vw - 28px); }
+  .places button { padding: 10px 12px; }
+  .biome-card { bottom: 126px; font-size: 12px; }
+}

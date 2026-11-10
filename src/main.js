@@ -13,11 +13,16 @@ root.innerHTML = `
     </div>
   </section>
   <section class="biome-card" id="biomeCard">Entering: Atlantic Whitewash</section>
+  <nav class="places" aria-label="Visit a landscape">
+    <button data-z="190">Coast</button><button data-z="95">Cedars</button><button data-z="0">Medina</button><button data-z="-105">Oasis</button><button data-z="-190">Dunes</button>
+    <button id="resetView">Reset view</button>
+  </nav>
 `;
 
 const canvas = document.getElementById('world');
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xf6d7a6, 0.009);
+scene.background = new THREE.Color(0xf6d7a6);
 
 const camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 900);
 camera.position.set(0, 15, 35);
@@ -163,13 +168,14 @@ river.rotation.x = -Math.PI/2; river.position.set(-70, .35, -110); river.rotatio
 const ocean = new THREE.Mesh(new THREE.PlaneGeometry(420, 90), mats.water);
 ocean.rotation.x = -Math.PI/2; ocean.position.set(0, -1, 210); scene.add(ocean);
 
+const lanternPositions = [];
+const lanternLights = Array.from({ length: 4 }, () => { const light = new THREE.PointLight(0xffb969, .55, 18); scene.add(light); return light; });
 for (let i=0;i<55;i++) {
   const lantern = new THREE.Mesh(new THREE.SphereGeometry(.45, 10, 10), mats.glow);
   const side = i % 2 ? -1 : 1;
   lantern.position.set(side*(8 + hash(i,0)*5), terrainHeight(0, i*2-50)+3, i*2-50);
   scene.add(lantern);
-  const light = new THREE.PointLight(0xffb969, .55, 18);
-  light.position.copy(lantern.position); scene.add(light);
+  lanternPositions.push(lantern.position.clone());
 }
 
 const biomes = [
@@ -181,14 +187,23 @@ const biomes = [
 ];
 const biomeCard = document.getElementById('biomeCard');
 let keys = new Set();
+function visit(z) {
+  controls.target.set(0, terrainHeight(0, z) + 4, z);
+  camera.position.set(18, terrainHeight(0, z) + 30, z + 42);
+  controls.update();
+}
+document.querySelectorAll('[data-z]').forEach(button => button.addEventListener('click', () => visit(Number(button.dataset.z))));
+document.getElementById('resetView').addEventListener('click', () => visit(0));
+const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+let previousTime = 0;
 window.addEventListener('keydown', e => keys.add(e.key.toLowerCase()));
 window.addEventListener('keyup', e => keys.delete(e.key.toLowerCase()));
 
-function updateMovement() {
+function updateMovement(delta) {
   const forward = Number(keys.has('w') || keys.has('arrowup')) - Number(keys.has('s') || keys.has('arrowdown'));
   const side = Number(keys.has('d') || keys.has('arrowright')) - Number(keys.has('a') || keys.has('arrowleft'));
   if (!forward && !side) return;
-  const speed = .75;
+  const speed = 18 * delta;
   controls.target.z -= forward * speed;
   controls.target.x += side * speed;
   controls.target.x = THREE.MathUtils.clamp(controls.target.x, -185, 185);
@@ -198,14 +213,19 @@ function updateMovement() {
 }
 
 function animate(t) {
-  updateMovement();
+  const delta = Math.min(0.05, Math.max(0, (t - previousTime) / 1000));
+  previousTime = t;
+  updateMovement(delta);
   const h = terrainHeight(controls.target.x, controls.target.z);
   controls.target.y = THREE.MathUtils.lerp(controls.target.y, h + 4, .04);
-  sun.position.x = Math.sin(t * 0.00006) * 95;
+  if (!reducedMotion.matches) sun.position.x = Math.sin(t * 0.00006) * 95;
   const current = biomes.reduce((best, b) => Math.abs(controls.target.z - b.z) < Math.abs(controls.target.z - best.z) ? b : best, biomes[0]);
   biomeCard.textContent = `Entering: ${current.name}`;
   scene.fog.color.lerp(new THREE.Color(current.fog), .015);
+  scene.background.copy(scene.fog.color);
   controls.update();
+  const nearest = [...lanternPositions].sort((a,b) => a.distanceToSquared(camera.position) - b.distanceToSquared(camera.position));
+  lanternLights.forEach((light, i) => light.position.copy(nearest[i]));
   renderer.render(scene, camera);
   requestAnimationFrame(animate);
 }
