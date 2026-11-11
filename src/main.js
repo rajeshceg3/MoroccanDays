@@ -1,3 +1,5 @@
+import {createSoundscape} from './soundscape.js';
+import {SOUND_PLACES} from './sound-places.js';
 import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 
@@ -15,10 +17,14 @@ root.innerHTML = `
   <section class="biome-card" id="biomeCard">Entering: Atlantic Whitewash</section>
   <nav class="places" aria-label="Visit a landscape">
     <button data-z="190">Coast</button><button data-z="95">Cedars</button><button data-z="0">Medina</button><button data-z="-105">Oasis</button><button data-z="-190">Dunes</button>
-    <button id="resetView">Reset view</button>
+    <button id="resetView">Reset view</button><button id="sound" aria-pressed="false">Sound on</button>
   </nav>
 `;
 
+const ambience=createSoundscape(SOUND_PLACES);
+let soundPlace=2;
+window.moroccoSound=ambience;
+document.getElementById('sound').onclick=()=>{const on=ambience.toggle(soundPlace);const b=document.getElementById('sound');b.textContent=on?'Sound off':'Sound on';b.setAttribute('aria-pressed',String(on))};
 const canvas = document.getElementById('world');
 const scene = new THREE.Scene();
 scene.fog = new THREE.FogExp2(0xf6d7a6, 0.009);
@@ -220,6 +226,8 @@ function animate(t) {
   controls.target.y = THREE.MathUtils.lerp(controls.target.y, h + 4, .04);
   if (!reducedMotion.matches) sun.position.x = Math.sin(t * 0.00006) * 95;
   const current = biomes.reduce((best, b) => Math.abs(controls.target.z - b.z) < Math.abs(controls.target.z - best.z) ? b : best, biomes[0]);
+  const nextPlace=biomes.indexOf(current);
+  if(nextPlace!==soundPlace){soundPlace=nextPlace;ambience.setPlace(soundPlace)}
   biomeCard.textContent = `Entering: ${current.name}`;
   scene.fog.color.lerp(new THREE.Color(current.fog), .015);
   scene.background.copy(scene.fog.color);
