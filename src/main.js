@@ -244,3 +244,38 @@ window.addEventListener('resize', () => {
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Quiet chrome: the landscape leads; zellige-tile controls visit when called and retire when left.
+(function () {
+  const PIN_KEY = 'moroccandays-chrome-pin', TOP_ZONE = 96, BOTTOM_ZONE = 150, RETIRE_MS = 2600;
+  const nav = document.querySelector('.places');
+  if (!nav) return;
+  nav.classList.add('chrome', 'chrome-on');
+  const els = [nav];
+  const tiles = [...nav.querySelectorAll('[data-z]')];
+  const setCurrent = z => tiles.forEach(t => t.setAttribute('aria-current', String(t.dataset.z === String(z))));
+  setCurrent(0);
+  tiles.forEach(t => t.addEventListener('click', () => setCurrent(t.dataset.z)));
+  document.getElementById('resetView').addEventListener('click', () => setCurrent(0));
+  const hint = document.createElement('button');
+  hint.className = 'chrome-hint'; hint.hidden = true; hint.setAttribute('aria-label', 'Show controls');
+  hint.innerHTML = '<svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M12 3 L14.6 9.4 L21 12 L14.6 14.6 L12 21 L9.4 14.6 L3 12 L9.4 9.4 Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>';
+  document.body.appendChild(hint);
+  const pinBtn = document.createElement('button');
+  pinBtn.id = 'pin-controls'; pinBtn.type = 'button'; pinBtn.className = 'pin-btn'; pinBtn.textContent = 'Pin'; pinBtn.title = 'Keep controls visible'; pinBtn.setAttribute('aria-pressed', 'false');
+  nav.appendChild(pinBtn);
+  let pinned = false; try { pinned = localStorage.getItem(PIN_KEY) === '1'; } catch (e) {}
+  let chrome = true, focusWithin = false, retireTimer = 0;
+  const apply = () => { const on = chrome || pinned; els.forEach(e => e.classList.toggle('chrome-on', on)); hint.hidden = on; };
+  const retireSoon = () => { clearTimeout(retireTimer); retireTimer = setTimeout(() => { if (!focusWithin) { chrome = false; apply(); } }, RETIRE_MS); };
+  const wake = () => { chrome = true; apply(); retireSoon(); };
+  document.addEventListener('pointermove', e => { if (e.pointerType === 'touch') return; if (e.clientY < TOP_ZONE || e.clientY > innerHeight - BOTTOM_ZONE) wake(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') { focusWithin = false; chrome = false; apply(); } });
+  document.addEventListener('focusin', e => { if (els.some(x => x.contains(e.target))) { focusWithin = true; clearTimeout(retireTimer); chrome = true; apply(); } });
+  document.addEventListener('focusout', e => { if (!els.some(x => x.contains(e.relatedTarget))) { focusWithin = false; retireSoon(); } });
+  hint.addEventListener('click', wake);
+  const setPin = next => { pinned = next; try { next ? localStorage.setItem(PIN_KEY, '1') : localStorage.removeItem(PIN_KEY); } catch (e) {} pinBtn.setAttribute('aria-pressed', String(next)); pinBtn.textContent = next ? 'Unpin' : 'Pin'; pinBtn.title = next ? 'Let controls retire' : 'Keep controls visible'; if (next) { chrome = true; apply(); } else retireSoon(); };
+  pinBtn.addEventListener('click', () => setPin(!pinned));
+  if (pinned) setPin(true);
+  retireSoon();
+})();
