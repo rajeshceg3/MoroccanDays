@@ -2,6 +2,7 @@ const fs=require('fs'),assert=require('node:assert'),pp=require('puppeteer-core'
 (async()=>{let server,b;try{
  if(!process.env.URL){server=spawn('python3',['-m','http.server','8834'],{stdio:'ignore'});await new Promise(r=>setTimeout(r,350))}
  b=await pp.launch({executablePath:'/usr/bin/google-chrome',headless:true,args:['--no-sandbox','--enable-unsafe-swiftshader']});const p=await b.newPage(),errors=[];p.on('pageerror',e=>errors.push(e.message));await p.setViewport({width:390,height:844});await p.emulateMediaFeatures([{name:'prefers-reduced-motion',value:'reduce'}]);
+ await p.evaluateOnNewDocument(()=>{try{localStorage.setItem('moroccandays-chrome-pin','1')}catch(e){}});
  await p.evaluateOnNewDocument(()=>{const c=AudioNode.prototype.connect;AudioNode.prototype.connect=function(d,...a){const r=c.call(this,d,...a);if(d instanceof AudioDestinationNode){if(!this.context.__tee)this.context.__tee=this.context.createMediaStreamDestination();window.__tee=this.context.__tee;c.call(this,this.context.__tee)}return r}});
  await p.goto(process.env.URL||'http://127.0.0.1:8834',{waitUntil:'domcontentloaded'});await p.waitForFunction(()=>window.moroccoSound,{timeout:45000});assert.equal(await p.evaluate(()=>window.moroccoSound.state.ctx),null);
  await p.click('#sound');await p.waitForFunction(()=>window.moroccoSound.state.ctx.state==='running');const dir=process.env.AUDIO_OUT||'verification/audio';fs.mkdirSync(dir,{recursive:true});

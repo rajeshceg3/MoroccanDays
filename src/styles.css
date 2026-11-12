@@ -22,3 +22,21 @@ h1 { font-size: clamp(32px, 4vw, 52px); line-height: 1; }
   .places button { padding: 10px 12px; }
   .biome-card { bottom: 126px; font-size: 12px; }
 }
+
+/* Quiet chrome */
+.chrome { opacity: 0; visibility: hidden; pointer-events: none; transition: opacity .22s ease, visibility .22s ease; }
+.chrome.chrome-on { opacity: 1; visibility: visible; pointer-events: auto; }
+.chrome-hint[hidden] { display: none; }
+.chrome-hint { position: fixed; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 20; width: 52px; height: 44px; display: grid; place-items: center; padding: 0; background: #ffd382; color: #3a211b; border: 0; cursor: pointer; clip-path: polygon(10px 0, calc(100% - 10px) 0, 100% 10px, 100% calc(100% - 10px), calc(100% - 10px) 100%, 10px 100%, 0 calc(100% - 10px), 0 10px); }
+.chrome-hint:focus-visible { outline: 3px solid #fff6df; outline-offset: 3px; clip-path: none; }
+/* Zellige tiles: cut-corner glazed tiles with a gold grout line */
+.places { filter: drop-shadow(3px 4px 0 rgba(0,0,0,.4)); }
+.places button { position: relative; isolation: isolate; border: 0; border-radius: 0; background: #ffd382; color: #fff6df; --c: 9px; clip-path: polygon(var(--c) 0, calc(100% - var(--c)) 0, 100% var(--c), 100% calc(100% - var(--c)), calc(100% - var(--c)) 100%, var(--c) 100%, 0 calc(100% - var(--c)), 0 var(--c)); transition: transform .18s cubic-bezier(0.23,1,0.32,1); }
+.places button::before { content: ''; position: absolute; inset: 2px; z-index: -1; background: #3a211b; clip-path: polygon(7px 0, calc(100% - 7px) 0, 100% 7px, 100% calc(100% - 7px), calc(100% - 7px) 100%, 7px 100%, 0 calc(100% - 7px), 0 7px); }
+.places button:hover { transform: translateY(-2px); }
+.places button:active { transform: scale(.96); }
+.places button[aria-current="true"], .places button[aria-pressed="true"], .places .pin-btn[aria-pressed="true"] { color: #3a211b; }
+.places button[aria-current="true"]::before, .places button[aria-pressed="true"]::before, .places .pin-btn[aria-pressed="true"]::before { background: #ffd382; inset: 3px; }
+.places button[aria-current="true"]::after { content: ''; position: absolute; left: 50%; bottom: 3px; width: 10px; height: 5px; margin-left: -5px; background: #3a211b; clip-path: polygon(50% 0, 100% 100%, 0 100%); }
+.places .pin-btn { font-size: 12px; opacity: .9; }
+@media (prefers-reduced-motion: reduce) { .chrome, .places button { transition: none; } }

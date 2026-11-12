@@ -7,7 +7,7 @@
   "scripts": {
     "start": "python3 -m http.server 4173",
     "check": "node --check src/main.js",
-    "test": "npm run check && node scripts/audio-structure.cjs && node scripts/browser-gate.cjs"
+    "test": "npm run check && node scripts/audio-structure.cjs && node scripts/browser-gate.cjs && node scripts/quiet-gate.cjs"
   },
   "devDependencies": {
     "puppeteer-core": "25.17.0"
